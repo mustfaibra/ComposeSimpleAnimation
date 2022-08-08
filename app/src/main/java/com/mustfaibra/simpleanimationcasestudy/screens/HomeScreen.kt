@@ -99,6 +99,8 @@ fun HomeScreen() {
     }
     /** The handler that we use to controller timing the animations */
     val mainHandler = Handler(Looper.getMainLooper())
+
+    /** The dynamic typing data */
     val fullSubtitle = remember {"Just do it. ✅"}
     var currentlyTypedSubtitle by remember { mutableStateOf("")}
 
@@ -174,6 +176,7 @@ fun HomeScreen() {
                 }
             )
         }
+        /** The grid items */
         items(displayedProducts, key = { it.id }) { product ->
             ProductItemLayout(
                 modifier = Modifier.fillMaxWidth(),
