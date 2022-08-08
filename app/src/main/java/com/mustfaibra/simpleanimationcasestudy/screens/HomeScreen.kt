@@ -1,5 +1,7 @@
 package com.mustfaibra.simpleanimationcasestudy.screens
 
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -10,14 +12,18 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.mustfaibra.simpleanimationcasestudy.R
 import com.mustfaibra.simpleanimationcasestudy.components.ProductItemLayout
 import com.mustfaibra.simpleanimationcasestudy.components.SearchField
@@ -85,9 +91,32 @@ fun HomeScreen() {
     )
     val displayedProducts: MutableList<Product> = remember { mutableStateListOf() }
     val cartProductsIds: MutableList<Int> = remember { mutableStateListOf() }
+
+
     var searchQuery by remember { mutableStateOf("") }.also {
         /** Init the first filtered list, which is all product */
         displayedProducts.addAll(allProducts)
+    }
+    /** The handler that we use to controller timing the animations */
+    val mainHandler = Handler(Looper.getMainLooper())
+    val fullSubtitle = remember {"Just do it. ✅"}
+    var currentlyTypedSubtitle by remember { mutableStateOf("")}
+
+    val subtitleTypingCallback = remember {
+        object : Runnable {
+            override fun run() {
+                /** Update the currently typed subtitle */
+                if(currentlyTypedSubtitle.length < fullSubtitle.length){
+                    currentlyTypedSubtitle += fullSubtitle[currentlyTypedSubtitle.length]
+                } else {
+                    currentlyTypedSubtitle = ""
+                }
+                mainHandler.postDelayed(this,300)
+            }
+        }
+    }
+    LaunchedEffect(key1 = Unit){
+        mainHandler.post(subtitleTypingCallback)
     }
 
     LazyVerticalGrid(
@@ -99,6 +128,23 @@ fun HomeScreen() {
         verticalArrangement = Arrangement.spacedBy(15.dp),
         contentPadding = PaddingValues(horizontal = 15.dp),
     ) {
+        /** Dynamic typing text */
+        item(
+            span = {
+                GridItemSpan(2)
+            }
+        ) {
+            Text(
+                modifier = Modifier.padding(vertical = 36.dp),
+                text = currentlyTypedSubtitle,
+                style = MaterialTheme.typography.body1.copy(
+                    fontSize = 25.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 10.sp,
+                ),
+            )
+        }
+
         /** Search field section */
         item(
             span = {
@@ -106,7 +152,6 @@ fun HomeScreen() {
             }
         ) {
             SearchField(
-                modifier = Modifier.padding(top = 36.dp),
                 backgroundColor = MaterialTheme.colors.surface.copy(alpha = 0.4f),
                 textColor = MaterialTheme.colors.onSurface,
                 value = searchQuery,
@@ -146,7 +191,8 @@ fun HomeScreen() {
                     } else {
                         cartProductsIds.add(product.id)
                     }
-                }
+                },
+                handler = mainHandler
             )
         }
     }

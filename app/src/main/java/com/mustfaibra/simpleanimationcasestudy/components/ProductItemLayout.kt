@@ -1,7 +1,6 @@
 package com.mustfaibra.simpleanimationcasestudy.components
 
 import android.os.Handler
-import android.os.Looper
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.animation.core.animateFloatAsState
@@ -38,6 +37,7 @@ fun ProductItemLayout(
     price: Double,
     title: String,
     onCart: Boolean = false,
+    handler: Handler,
     onProductClicked: () -> Unit,
     onChangeCartState: () -> Unit,
 ) {
@@ -51,7 +51,6 @@ fun ProductItemLayout(
      * To create the floating effect, we should configure verticalOffset & productStageWidth
      * to be updated each 0.2 seconds , using Handler.
      */
-    val mainHandler = Handler(Looper.getMainLooper())
     val floatingEffectControllerCallback = remember {
         object : Runnable {
             override fun run() {
@@ -76,14 +75,13 @@ fun ProductItemLayout(
                     verticalOffset = verticalOffset.minus(60)
                     productStageSize = defaultStageSize.times(0.5f)
                 }
-                mainHandler.postDelayed(this, 600)
+                handler.postDelayed(this, 600)
             }
         }
     }
-    LaunchedEffect(key1 = Unit) {
-        mainHandler.post(floatingEffectControllerCallback)
+    LaunchedEffect(key1 = Unit){
+        handler.post(floatingEffectControllerCallback)
     }
-
     /** We start by creating the internal box height animation */
     val animatedInternalBoxHeight by animateSizeAsState(
         targetValue = internalBoxSize,
